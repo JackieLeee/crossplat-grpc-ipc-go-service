@@ -1,0 +1,17 @@
+# 忽略测试目录下的所有 .json 和 .pb 文件
+/test/**/*.json
+/test/**/*.pb
+
+# 常见的忽略规则
+*.log
+*.swp
+*.bak
+*.tmp
+*.DS_Store
+
+# Go模块缓存目录
+go.sum
+
+# IDE或编辑器生成的临时文件
+.idea/
+.vscode/
