@@ -1,8 +1,85 @@
 # 跨平台Go gRPC IPC 服务库
+[![Build Status](https://github.com/JackieLeee/crossplat-grpc-ipc-go-service/actions/workflows/makefile.yml/badge.svg)](https://github.com/JackieLeee/crossplat-grpc-ipc-go-service/actions)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+## 目录
+- [简介](#简介)
+- [目录说明](#目录说明)
+  - [文件和目录描述](#文件和目录描述)
+- [使用方法](#使用方法)
+- [环境准备](#环境准备)
+  - [安装NDK](#安装ndk)
+  - [安装CMake](#安装cmake)
+  - [动态链接库生成](#动态链接库生成)
+- [相关仓库](#相关仓库)
 
 ## 简介
 
 本仓库提供了一个用Go语言实现的gRPC服务动态链接库（DLL），用于跨平台进程间通信（IPC）。此服务可以轻松集成到各种客户端应用程序中，支持高效、可靠的IPC。
+
+## 目录说明
+
+项目遵循清晰的组织结构，下面列出了主要目录及其内容：
+```
+.
+|-- CHANGELOG.md
+|-- Makefile
+|-- README.md
+|-- api
+|   `-- grpc_api.go
+|-- cmd
+|   `-- cgo
+|       `-- cgo_functions.go
+|-- go.mod
+|-- go.sum
+|-- internal
+|   |-- native_grpc
+|   |   |-- call_options.go
+|   |   |-- headers.go
+|   |   |-- method_invoker.go
+|   |   `-- parameter.go
+|   `-- pb
+|       `-- greeter
+|           |-- greeter.pb.go
+|           `-- greeter_grpc.pb.go
+|-- pkg
+|   `-- sdk
+|       |-- arm64-v8a
+|       |   |-- libgrpc_server.h
+|       |   `-- libgrpc_server.so
+|       `-- armeabi-v7a
+|           |-- libgrpc_server.h
+|           `-- libgrpc_server.so
+|-- protobuf
+|   |-- README.md
+|   `-- xxx
+|       `-- xxx.proto
+|-- scripts
+|   `-- compile_protos.sh
+`-- test
+    `-- api
+        |-- grpc_api_test.go
+        |-- helloRequest.json
+        `-- helloRequest.pb
+```
+
+### 文件和目录描述
+- `CHANGELOG.md`: 记录了项目的变更历史。 
+- `Makefile`: 包含了用于编译和其他任务的命令。 
+- `api`: 存放gRPC服务的API接口实现。 
+- `cmd`: 包含构建和运行服务的命令行工具代码。 
+  - `cgo/cgo_functions.go`: C语言与Go语言交互的函数定义。 
+- `internal`: 内部实现细节。 
+  - `native_grpc/`: 底层gRPC传输的实现。
+  - `pb/xxx/`: Protocol Buffers生成的代码。 
+- `pkg/sdk/`: 预编译的动态链接库（DLL）文件。 
+  - `arm64-v8a/` 和 `armeabi-v7a/`: 不同架构下的SDK文件。 
+- `protobuf`: Protocol Buffers相关的文件和配置。 
+  - `xxx/xxx.proto`: 定义了gRPC服务的消息格式。 
+- `scripts`: 脚本文件，用于自动化任务。 
+  - `compile_protos.sh`: 编译protobuf文件的脚本。
+- `test/xxx/`: 测试代码目录，包含单元测试用例。 
+  - `xxx_test.go`: 测试代码文件。
 
 ## 使用方法
 

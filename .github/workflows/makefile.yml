@@ -1,0 +1,29 @@
+name: Build Android SDK
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1.5.0
+        with:
+          # Exact version to use
+          ndk-version: r27c
+
+      - name: Run Go mod tidy
+        run: |
+          go mod tidy
+
+      - name: Install dependencies
+        run: make
