@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	greeter "ClientGrpcDemo/internal/pb/greeter"
+	"ClientGrpcDemo/protocol/v1/greeter"
 )
 
 var GrpcServer = &server{}

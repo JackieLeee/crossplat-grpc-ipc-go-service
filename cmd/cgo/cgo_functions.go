@@ -23,19 +23,19 @@ import (
 	"unsafe"
 
 	"ClientGrpcDemo/api"
-	"ClientGrpcDemo/internal/native_grpc"
+	"ClientGrpcDemo/internal/transport/inline_grpc"
 )
 
 func main() {}
 
 var (
-	methodInvoker *native_grpc.GrpcMethodInvoker
+	methodInvoker *inline_grpc.GrpcMethodInvoker
 	once          sync.Once
 )
 
-func getMethodInvoker() *native_grpc.GrpcMethodInvoker {
+func getMethodInvoker() *inline_grpc.GrpcMethodInvoker {
 	once.Do(func() {
-		methodInvoker = native_grpc.NewGrpcMethodInvoker(api.GrpcServer)
+		methodInvoker = inline_grpc.NewGrpcMethodInvoker(api.GrpcServer)
 	})
 	return methodInvoker
 }
@@ -45,7 +45,7 @@ func getMethodInvoker() *native_grpc.GrpcMethodInvoker {
 //export invokeMethod
 func invokeMethod(req C.GrpcRequest, resp *C.GrpcResponse) {
 	// 将 C struct 转换为 Go struct
-	goReq := native_grpc.GrpcRequest{
+	goReq := inline_grpc.GrpcRequest{
 		MethodName:   C.GoString(req.method_name),
 		RequestBytes: C.GoBytes(unsafe.Pointer(req.request_bytes), C.int(req.request_len)),
 		OptionsJSON:  C.GoString(req.options_json),

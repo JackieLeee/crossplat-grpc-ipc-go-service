@@ -10,6 +10,7 @@
 #   -w: 去掉调试信息
 
 # 定义颜色，用于日志输出
+RED = \033[31m
 GREEN = \033[32m
 YELLOW = \033[33m
 RESET = \033[0m
@@ -33,45 +34,95 @@ endif
 ANDROID_NDK_HOME_UNIX := $(subst \,/,$(ANDROID_NDK_HOME))
 
 # 定义输出目录和文件名
-OUT_DIR := ./pkg/sdk
-OUT_FILE_NAME := libgrpc_server
+OUTPUT_DIR := ./output
+OUTPUT_NAME := libgrpc_server
+
+# 定义测试根目录
+TEST_ROOT := ./test
 
 # 定义目标
-TARGETS := armeabi-v7a arm64-v8a
+TARGETS := armeabi-v7a arm64-v8a android_archive ios_framework
+
+# 声明伪目标
+.PHONY: test clean build all arm64-v8a armeabi-v7a android_archive ios_framework
 
 # 默认目标
-all: $(TARGETS)
+all: test build
 
-# 定义规则
+build:
+	@echo "Starting build process..."
+	@for target in $(TARGETS); do \
+		$(MAKE) $$target; \
+	done
+
+android_archive:
+	@export GOARCH=arm && \
+	export GOOS=android && \
+	export CGO_ENABLED=1 && \
+	gomobile bind -target=android -androidapi 21 -javapkg=com.mobvoyage.sdk -o $(OUTPUT_DIR)/android_archive/$(OUTPUT_NAME).aar ./cmd/gomobile && \
+	printf "$(GREEN)Build android aar success$(RESET)\n" || \
+	printf "$(RED)Build android aar failed$(RESET)\n"
+
+ios_framework:
+	@export GOARCH=arm64 && \
+	export GOOS=ios && \
+	export CGO_ENABLED=1 && \
+	gomobile bind -target=ios -o $(OUTPUT_DIR)/ios_framework/$(OUTPUT_NAME).framework ./cmd/gomobile && \
+	printf "$(GREEN)Build iOS framework success$(RESET)\n" || \
+	printf "$(RED)Build iOS framework failed$(RESET)\n"
+
 armeabi-v7a:
-	@printf "$(GREEN)Building armeabi-v7a$(RESET)\n"
 	@export GOARCH=arm && \
 	export GOOS=android && \
 	export CGO_ENABLED=1 && \
 	export CC=$(ANDROID_NDK_HOME_UNIX)/toolchains/llvm/prebuilt/$(ARCH)/bin/armv7a-linux-androideabi21-clang && \
-		printf "$(YELLOW)Executing command: go build -trimpath -buildmode=c-shared -o $(OUT_DIR)/armeabi-v7a/$(OUT_FILE_NAME).so -ldflags \"-s -w\" ./cmd/cgo/cgo_functions.go$(RESET)\n" && \
-	go build -trimpath -buildmode=c-shared -o $(OUT_DIR)/armeabi-v7a/$(OUT_FILE_NAME).so -ldflags "-s -w" ./cmd/cgo/cgo_functions.go
-	@printf "$(GREEN)Build armeabi-v7a success$(RESET)\n"
+	go build -trimpath -buildmode=c-shared -o $(OUTPUT_DIR)/armeabi-v7a/$(OUTPUT_NAME).so -ldflags "-s -w" ./cmd/cgo/cgo_functions.go && \
+	printf "$(GREEN)Build armeabi-v7a success$(RESET)\n" || \
+	printf "$(RED)Build armeabi-v7a failed$(RESET)\n"
 
 arm64-v8a:
-	@printf "$(GREEN)Building arm64-v8a$(RESET)\n"
 	@export GOARCH=arm64 && \
 	export GOOS=android && \
 	export CGO_ENABLED=1 && \
 	export CC=$(ANDROID_NDK_HOME_UNIX)/toolchains/llvm/prebuilt/$(ARCH)/bin/aarch64-linux-android21-clang && \
-		printf "$(YELLOW)Executing command: go build -trimpath -buildmode=c-shared -o $(OUT_DIR)/arm64-v8a/$(OUT_FILE_NAME).so -ldflags \"-s -w\" ./cmd/cgo/cgo_functions.go$(RESET)\n" && \
-	go build -trimpath -buildmode=c-shared -o $(OUT_DIR)/arm64-v8a/$(OUT_FILE_NAME).so -ldflags "-s -w" ./cmd/cgo/cgo_functions.go
-	@printf "$(GREEN)Build arm64-v8a success$(RESET)\n"
+	go build -trimpath -buildmode=c-shared -o $(OUTPUT_DIR)/arm64-v8a/$(OUTPUT_NAME).so -ldflags "-s -w" ./cmd/cgo/cgo_functions.go && \
+	printf "$(GREEN)Build arm64-v8a success$(RESET)\n" || \
+	printf "$(RED)Build arm64-v8a failed$(RESET)\n"
 
 # 清理规则
 clean:
 # 遍历TARGETS去清理
 	@printf "$(YELLOW)Cleaning up...$(RESET)\n"
 	@for target in $(TARGETS); do \
-  		printf "$(YELLOW)Removing $(OUT_DIR)/$$target/$(OUT_FILE_NAME).so$(RESET)\n"; \
-		rm -rf $(OUT_DIR)/$$target/$(OUT_FILE_NAME).so; \
-				printf "$(YELLOW)Removing $(OUT_DIR)/$$target/$(OUT_FILE_NAME).h$(RESET)\n"; \
-		rm -rf $(OUT_DIR)/$$target/$(OUT_FILE_NAME).h; \
+		if [ -e $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).so ]; then \
+			printf "$(YELLOW)Removing $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).so$(RESET)\n"; \
+			rm -rf $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).so; \
+		fi; \
+		if [ -e $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).h ]; then \
+			printf "$(YELLOW)Removing $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).h$(RESET)\n"; \
+			rm -rf $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).h; \
+		fi; \
+		if [ -e $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).aar ]; then \
+			printf "$(YELLOW)Removing $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).aar$(RESET)\n"; \
+			rm -rf $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).aar; \
+		fi; \
+		if [ -e $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME)-sources.jar ]; then \
+			printf "$(YELLOW)Removing $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME)-sources.jar$(RESET)\n"; \
+			rm -rf $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME)-sources.jar; \
+		fi; \
+		if [ -e $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).framework ]; then \
+			printf "$(YELLOW)Removing $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).framework$(RESET)\n"; \
+			rm -rf $(OUTPUT_DIR)/$$target/$(OUTPUT_NAME).framework; \
+		fi; \
 	done
 	@printf "$(GREEN)Cleanup complete$(RESET)\n"
 
+test:
+	@echo "Running all Go tests in the test directory..."
+	@go test -failfast -race $(TEST_ROOT)/...
+	@if [ $$? -eq 0 ]; then \
+		echo "All tests passed."; \
+	else \
+		echo "Some tests failed."; \
+		exit 1; \
+	fi

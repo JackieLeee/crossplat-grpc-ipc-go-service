@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"ClientGrpcDemo/internal/pb/greeter"
+	"ClientGrpcDemo/protocol/v1/greeter"
 )
 
 var (
