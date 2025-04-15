@@ -57,6 +57,11 @@ graph LR
 
 ### 核心实现原理
 采用**Golang+gRPC+Protobuf**技术栈构建标准化SDK，通过三大层次重构实现质变：
+
+#### 1. 协议层兼容性设计
+- **接口继承**：完整保留gRPC的.proto接口定义、Protobuf编解码规范及错误处理机制，确保与现有系统无缝对接
+- **生态复用**：通过自动代码生成工具链（protoc-gen-go）实现业务逻辑的无缝迁移，服务接口调用代码零修改
+
 ```mermaid
 sequenceDiagram
     participant Client as 客户端
@@ -99,10 +104,6 @@ sequenceDiagram
     CA-->>Client: gRPC响应
     deactivate CA
 ```
-
-#### 1. 协议层兼容性设计
-- **接口继承**：完整保留gRPC的.proto接口定义、Protobuf编解码规范及错误处理机制，确保与现有系统无缝对接
-- **生态复用**：通过自动代码生成工具链（protoc-gen-go）实现业务逻辑的无缝迁移，服务接口调用代码零修改
 
 #### 2. 传输层革新原理
 - **网络协议栈层级消除**：将基于HTTP/2的远程网络调用替换为进程内本地调用，规避TCP握手、HTTP/2帧封装等网络协议处理，消除网络IO开销：
@@ -209,7 +210,8 @@ output/
 ├── arm64-v8a
 │   ├── libgrpc_server.so          # arm64-v8a架构动态库
 │   └── libgrpc_server.h           # C接口定义
-├── armeabi-v7a│   ├── libgrpc_server.so          # armeabi-v7a架构动态库
+├── armeabi-v7a
+│   ├── libgrpc_server.so          # armeabi-v7a架构动态库
 │   └── libgrpc_server.h           # C接口定义
 └── ios_framework
     └── libgrpc_server.framework   # iOS框架文件

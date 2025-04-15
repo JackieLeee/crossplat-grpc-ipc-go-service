@@ -25,5 +25,5 @@ jobs:
         run: |
           go mod tidy
 
-      - name: Install dependencies
-        run: make
+      - name: Build Android SDK
+        run: make test armeabi-v7a arm64-v8a
